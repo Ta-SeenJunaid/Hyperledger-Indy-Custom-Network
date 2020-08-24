@@ -17,3 +17,16 @@ def clean(config, full, network_name):
     if full:
         shutil.rmtree(config_helper.ledger_base_dir)
         shutil.rmtree(config_helper.log_base_dir)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Removes nodes data and configuration')
+    parser.add_argument('--full', required=False, type=bool, default=False,
+    help="remove configs and logs too")
+    parser.add_argument('--network', required=False, type=str, help="Network to clean")
+    args = parser.parse_args()
+    config = getConfig()
+    clean(config, args.full, args.network)
+
+# Usages:
+# sudo python3 clear_node.py --full True --network sandbox
