@@ -3,6 +3,42 @@
 
 class NetworkSetup:
 
+    @staticmethod
+    def _bootstrap_args_type_node_count(nodesStrArg):
+        if not nodesStrArg.isdigit():
+            raise argparse.ArgumentTypeError('should be a number')
+        n = int(nodesStrArg)
+
+        if n > 100:
+            raise argparse.ArgumentTypeError(
+                "Cannot run {} nodes for this setup"
+                "For this setup, we need node number less than 100"
+                "This is not a problem with protocol but some placeholder".format(n)
+                )
+        if n <= 0:
+            raise argparse.ArgumentTypeError("Should be > 0")
+
+        return n
+
+    @staticmethod
+    def _bootstrap_args_type_ips_hosts(ips_hosts_str_arg):
+        ips = []
+        for arg in ips_hosts_str_arg.split(','):
+            arg = arg.strip()
+            try:
+                ipaddress.ip_address(arg)
+            except ValueError:
+                if not is_hostname_valid(arg):
+                    raise argparse.ArgumentTypeError(
+                    "'{}' is not a valid IP or hostname".format(arg)
+                )
+                else:
+                    ips.append(arg)
+            else:
+                ips.append(arg)
+
+        return ips
+
     @classmethod
     def bootstrapNodes(cls, config, startingPort, nodeParamsFileName, domainTxnFieldOrder,
                            config_helper_class=PConfigHelper, node_config_helper_class=PNodeConfigHelper,
