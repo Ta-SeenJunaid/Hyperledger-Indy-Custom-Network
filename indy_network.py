@@ -39,6 +39,49 @@ class NetworkSetup:
 
         return ips
 
+    @staticmethod
+    def _bootstrap_args_type_steward_seeds(steward_seeds_str_arg):
+        steward_seeds = []
+        i = 1
+        for arg in steward_seeds_str_arg.split(','):
+            arg = str(arg)
+            arg = arg.strip()
+            if len(arg) != 32:
+                raise argparse.ArgumentTypeError("The lenght of Steward seed {} should be 32 digit long".format(i))
+            steward_seeds.append(arg)
+            i += 1
+
+        return steward_seeds
+
+    @staticmethod
+    def _bootstrap_args_type_node_seeds(node_seeds_str_arg):
+        node_seeds = []
+        i = 1
+        for arg in node_seeds_str_arg.split(','):
+            arg = str(arg)
+            arg = arg.strip()
+            if len(arg) != 32:
+                raise argparse.ArgumentTypeError("The lenght of Node seed {} should be 32 digit long".format(i))
+            node_seeds.append(arg)
+            i += 1
+
+        return node_seeds
+
+
+    @staticmethod
+    def _bootstrap_args_type_trustee_seeds(trustee_seeds_str_arg):
+        trustee_seeds = []
+        i = 1
+        for arg in trustee_seeds_str_arg.split(','):
+            arg = str(arg)
+            arg = arg.strip()
+            if len(arg) != 32:
+                raise argparse.ArgumentTypeError("The length of Trustee seed {} should be 32 digit long".format(i))
+            trustee_seeds.append(arg)
+            i +=1
+
+        return trustee_seeds
+
     @classmethod
     def bootstrapNodes(cls, config, startingPort, nodeParamsFileName, domainTxnFieldOrder,
                            config_helper_class=PConfigHelper, node_config_helper_class=PNodeConfigHelper,
