@@ -83,6 +83,36 @@ class NetworkSetup:
         return trustee_seeds
 
     @classmethod
+    def gen_defs(cls, ips, steward_seeds, node_seeds, node_count, starting_port):
+
+        if not ips:
+            ips = ['127.0.0.1'] * node_count
+        else:
+            if len(ips) != node_count:
+                if len(ips) > node_count:
+                    ips = ips[:node_count]
+                else:
+                    ips += ['127.0.0.1'] * (node_count - len(ips))
+
+        if ( steward_seeds == None ):
+            steward_seeds = []
+            for i in range(1, node_count+1):
+                    seed = "Steward" + str(i)
+                    seed=('0'*(32 - len(seed)) + seed)
+                    steward_seeds.append(seed)
+
+        elif len(steward_seeds) != node_count:
+            if len(steward_seeds) > node_count:
+                steward_seeds = steward_seeds[:node_count]
+            else:
+                current_steward_seeds_list_length = len(steward_seeds)
+                for i in range(current_steward_seeds_list_length+1, node_count+1):
+                    seed = "Steward" + str(i)
+                    seed=('0'*(32 - len(seed)) + seed)
+                    steward_seeds.append(seed)
+
+
+    @classmethod
     def bootstrapNodes(cls, config, startingPort, nodeParamsFileName, domainTxnFieldOrder,
                            config_helper_class=PConfigHelper, node_config_helper_class=PNodeConfigHelper,
                            chroot: str=None):
