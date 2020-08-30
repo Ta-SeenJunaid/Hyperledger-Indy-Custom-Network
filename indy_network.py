@@ -1,5 +1,7 @@
 import argparse
 import ipaddress
+import os
+from collections import namedtuple
 
 from stp_core.crypto.nacl_wrappers import Signer
 
@@ -137,6 +139,36 @@ class NetworkSetup:
                     node_seeds.append(seed)         
         
 
+        steward_defs = []
+        node_defs = []
+        for i in range(1, node_count + 1):
+            d = adict()
+            d.name = "Steward" + str(i)
+            d.sigseed = cls.get_signing_seed(steward_seeds[i-1])
+            s_signer = DidSigner(seed=d.sigseed)
+            d.nym = s_signer.identifier
+            d.verkey = s_signer.verkey
+            steward_defs.append(d)
+
+            name = "Node" + str(i)
+            sigseed = cls.get_signing_seed(node_seeds[i-1])
+            node_defs.append(NodeDef(
+                name=name,
+                ip=ips[i-1],
+                port=starting_port + (i*2) - 1,
+                client_port=starting_port + (i*2),
+                idx=i,
+                sigseed=sigseed,
+                verkey=Signer(sigseed).verhex,
+                steward_nym=d.nym))
+        return steward_defs, node_defs    
+
+
+    @staticmethod
+    def get_signing_seed(name: str) -> bytes:
+        return ('0'*(32 - len(name)) + name).encode()    
+        
+
 
 
     @classmethod
@@ -179,3 +211,7 @@ class NetworkSetup:
             action='store_true')
 
         args = parser.parse_args()
+
+
+NodeDef = namedtuple('NodeDef', ['name', 'ip', 'port', 'client_port', 'idx',
+                        'sigseed', 'verkey', 'steward_nym'])
