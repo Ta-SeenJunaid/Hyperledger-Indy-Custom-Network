@@ -1,4 +1,12 @@
+import argparse
+import ipaddress
 
+from stp_core.crypto.nacl_wrappers import Signer
+
+from plenum.common.config_helper import PConfigHelper, PNodeConfigHelper
+from plenum.common.util import is_hostname_valid
+from plenum.common.signer_did import DidSigner
+from stp_core.common.util import adict
 
 
 class NetworkSetup:
@@ -98,9 +106,9 @@ class NetworkSetup:
             steward_seeds = []
             for i in range(1, node_count+1):
                     seed = "Steward" + str(i)
-                    seed=('0'*(32 - len(seed)) + seed)
+                    seed=('0'*(32 - len(seed)) + seed) 
                     steward_seeds.append(seed)
-
+        
         elif len(steward_seeds) != node_count:
             if len(steward_seeds) > node_count:
                 steward_seeds = steward_seeds[:node_count]
@@ -108,8 +116,27 @@ class NetworkSetup:
                 current_steward_seeds_list_length = len(steward_seeds)
                 for i in range(current_steward_seeds_list_length+1, node_count+1):
                     seed = "Steward" + str(i)
-                    seed=('0'*(32 - len(seed)) + seed)
-                    steward_seeds.append(seed)
+                    seed=('0'*(32 - len(seed)) + seed) 
+                    steward_seeds.append(seed) 
+
+        if ( node_seeds == None):
+            node_seeds = []
+            for i in range(1, node_count+1):
+                seed = "Node" + str(i) 
+                seed=('0'*(32 - len(seed)) + seed)
+                node_seeds.append(seed)
+
+        elif len(node_seeds) != node_count:
+            if len(node_seeds) > node_count:
+                node_seeds = node_seeds[:node_count] 
+            else:
+                current_node_seeds_list_length = len(node_seeds)
+                for i in range(current_node_seeds_list_length+1, node_count+1):
+                    seed = "Node" + str(i) 
+                    seed=('0'*(32-len(seed)) + seed)
+                    node_seeds.append(seed)         
+        
+
 
 
     @classmethod
