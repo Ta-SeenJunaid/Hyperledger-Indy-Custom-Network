@@ -166,7 +166,43 @@ class NetworkSetup:
 
     @staticmethod
     def get_signing_seed(name: str) -> bytes:
-        return ('0'*(32 - len(name)) + name).encode()    
+        return ('0'*(32 - len(name)) + name).encode()   
+
+
+    @classmethod
+    def gen_client_defs(cls, client_count):
+        return [cls.gen_client_def(idx) for idx in range(1, client_count+1)]
+
+    @classmethod
+    def gen_client_def(cls, idx):
+        d = adict()
+        d.name = "Client" + str(idx)
+        d.sigseed = cls.get_signing_seed(d.name)
+        c_signer = DidSigner(seed=d.sigseed)
+        d.nym = c_signer.identifier
+        d.verkey = c_signer.verkey
+        return d
+
+    @classmethod 
+    def gen_trustee_def(cls, trustee_seeds):
+
+        if ( trustee_seeds == None ):
+            trustee_seeds = []
+            seed = "Trustee1" 
+            seed=('0'*(32 - len(seed)) + seed)
+            trustee_seeds.append(seed)
+
+        trustee_defs = []
+        for i in range(1, len(trustee_seeds)+1):
+            d = adict()
+            d.name = "Trustee" + str(i)
+            d.sigseed = cls.get_signing_seed(trustee_seeds[i-1])
+            t_signer = DidSigner(seed=d.sigseed)
+            d.nym = t_signer.identifier
+            d.verkey = t_signer.verkey
+            trustee_defs.append(d)
+
+        return trustee_defs 
         
 
 
