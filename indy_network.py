@@ -249,5 +249,27 @@ class NetworkSetup:
         args = parser.parse_args()
 
 
+        if isinstance(args.nodeNum, int):
+            if not (1 <= args.nodeNum <= args.nodes):
+                raise PlenumValueError(
+                    'args.nodeNum', args.nodeNum,
+                    ">= 1 && <= args.nodes {}".format(args.nodes)
+                )
+        elif isinstance(args.nodeNum, list):
+            if any([True for x in args.nodeNum if not ( 1 <= x <= args.nodes)]):
+                raise PlenumValueError(
+                    'some items in nodeNum list', args.nodeNum,
+                    ">=1 && <= args.nodes {}".format(args.nodes)  
+            )  
+
+        node_num = [args.nodeNum, None] if args.nodeNum else [None]
+
+        steward_defs, node_defs = cls.gen_defs(args.ips, args.stewardSeeds, args.nodeSeeds, args.nodes, startingPort)
+
+        client_defs = cls.gen_client_defs(args.clients)
+
+        trustee_def = cls.gen_trustee_def(args.trusteeSeeds)
+
+
 NodeDef = namedtuple('NodeDef', ['name', 'ip', 'port', 'client_port', 'idx',
                         'sigseed', 'verkey', 'steward_nym'])
