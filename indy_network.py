@@ -6,6 +6,9 @@ import fileinput
 
 from common.exceptions import PlenumValueError
 
+from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
+
+
 
 from stp_core.crypto.nacl_wrappers import Signer
 
@@ -209,6 +212,31 @@ class NetworkSetup:
         return trustee_defs 
         
 
+    @classmethod 
+    def init_pool_ledger(cls, appendToLedgers, genesis_dir, config):
+        pool_txn_file = cls.pool_ledger_file_name(config)
+        pool_ledger = create_genesis_txn_init_ledger(genesis_dir, pool_txn_file)
+        if not appendToLedgers:
+            pool_ledger.reset()
+        return pool_ledger
+
+    @classmethod
+    def init_domain_ledger(cls, appendToLedgers, genesis_dir, config, domainTxnFieldOrder):
+        domain_txn_file = cls.domain_ledger_file_name(config)
+        domain_ledger = create_genesis_txn_init_ledger(genesis_dir, domain_txn_file)
+        if not appendToLedgers:
+            domain_ledger.reset()
+        return domain_ledger
+
+
+
+    @classmethod
+    def pool_ledger_file_name(cls, config):
+        return config.poolTransactionsFile
+
+    @classmethod
+    def domain_ledger_file_name(cls, config):
+        return config.domainTransactionsFile
 
 
     @classmethod
@@ -308,7 +336,9 @@ class NetworkSetup:
         
         if not localNodes:
             localNodes = {}
-    
+
+
+
 
 
 NodeDef = namedtuple('NodeDef', ['name', 'ip', 'port', 'client_port', 'idx',
