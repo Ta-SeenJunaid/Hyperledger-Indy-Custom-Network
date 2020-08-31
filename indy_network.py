@@ -2,6 +2,10 @@ import argparse
 import ipaddress
 import os
 from collections import namedtuple
+import fileinput
+
+from common.exceptions import PlenumValueError
+
 
 from stp_core.crypto.nacl_wrappers import Signer
 
@@ -269,6 +273,42 @@ class NetworkSetup:
         client_defs = cls.gen_client_defs(args.clients)
 
         trustee_def = cls.gen_trustee_def(args.trusteeSeeds)
+
+
+        if args.nodeNum:
+
+            for line in fileinput.input(['/etc/indy/indy_config.py'], inplace=True):
+                if 'NETWORK_NAME' not in line:
+                    print(line, end="")
+            with open('/etc/indy/indy_config.py', 'a') as cfgfile:
+                cfgfile.write("NETWORK_NAME = '{}'".format(args.network))
+
+        for n_num in node_num:
+            cls.bootstrap_nodes_core(config, args.network, args.appendToLedgers, domainTxnFieldOrder, trustee_def,
+                                       steward_defs, node_defs, client_defs, n_num, nodeParamsFileName,
+                                       config_helper_class, node_config_helper_class)
+
+
+    @classmethod 
+    def bootstrap_nodes_core(
+            cls,
+            config,
+            network,
+            appendToLedgers,
+            domainTxnFieldOrder,
+            trustee_def,
+            steward_defs,
+            node_defs,
+            client_defs,
+            localNodes,
+            nodeParamsFileName,
+            config_helper_class=PConfigHelper,
+            node_config_helper_class=PNodeConfigHelper,
+            chroot: str=None):
+        
+        if not localNodes:
+            localNodes = {}
+    
 
 
 NodeDef = namedtuple('NodeDef', ['name', 'ip', 'port', 'client_port', 'idx',
