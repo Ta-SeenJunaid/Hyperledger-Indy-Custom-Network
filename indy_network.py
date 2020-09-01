@@ -406,6 +406,41 @@ class NetworkSetup:
             seq_no += 1
             domainLedger.add(txn)
 
+        seq_no = 1
+        for nd in node_defs:
+            if nd.idx in _localNodes:
+                _, verkey, blskey, key_proof = initNodeKeysForBothStacks(nd.name, keys_dir, 
+                                                                        nd.sigseed, override=True)
+                verkey = verkey.encode()
+                assert verkey == nd.verkey
+
+                if nd.ip != '127.0.0.1':
+                    paramsFilePath = os.path.join(config.GENERAL_CONFIG_DIR, nodeParamsFileName)
+                    print('Nodes will not run locally, so writing {}'.format(paramsFilePath))
+                    NetworkSetup.write_node_params_file(paramsFilePath, nd.name,
+                                                    "0.0.0.0", nd.port,
+                                                    "0.0.0.0", nd.client_port)
+                
+                print("This node with name {} will use ports {} and {} for nodestack and clientstack respectavely"
+                      .format(nd.name, nd.port, nd.client_port))
+
+            else:
+                verkey = nd.verkey
+                blskey, key_proof = init_bls_keys(keys_dir, nd.name, nd.sigseed)
+            node_nym = cls.get_nym_from_verkey(verkey)
+
+            node_txn = Steward.node_txn(nd.steward_nym, nd.name, node_nym,
+                                        nd.ip, nd.port, nd.client_port, blskey=blskey,
+                                        bls_key_proof=key_proof,
+                                        seq_no=seq_no,
+                                        protocol_version=genesis_protocol_version)
+            
+            seq_no +=1
+            poolLedger.add(node_txn)
+        
+        poolLedger.stop()
+        domainLedger.stop()
+
 
 
 
