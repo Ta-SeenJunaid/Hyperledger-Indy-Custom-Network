@@ -8,17 +8,19 @@ from common.exceptions import PlenumValueError
 
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 
-
-
 from stp_core.crypto.nacl_wrappers import Signer
 
-from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.member.member import Member
+from plenum.common.member.steward import Steward
 
+from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
+from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.config_helper import PConfigHelper, PNodeConfigHelper
-from plenum.common.util import is_hostname_valid
+from plenum.common.util import hexToFriendly, is_hostname_valid
 from plenum.common.signer_did import DidSigner
 from stp_core.common.util import adict
+
+CLIENT_CONNECTIONS_LIMIT = 500
 
 
 class NetworkSetup:
@@ -240,6 +242,24 @@ class NetworkSetup:
     @classmethod
     def domain_ledger_file_name(cls, config):
         return config.domainTransactionsFile
+
+    @staticmethod
+    def write_node_params_file(filePath, name, nIp, nPort, cIp, cPort):
+        contents = [
+            'NODE_NAME={}'.format(name),
+            'NODE_IP={}'.format(nIp),
+            'NODE_PORT={}'.format(nPort),
+            'NODE_CLIENT_IP={}'.format(cIp),
+            'NODE_CLIENT_PORT={}'.format(cPort),
+            'CLIENT_CONNECTIONS_LIMIT={}'.format(CLIENT_CONNECTIONS_LIMIT)
+        ]
+        with open(filePath, 'w') as f:
+            f.writelines(os.linesep.join(contents))
+
+    
+    @staticmethod
+    def get_nym_from_verkey(verkey: bytes):
+        return hexToFriendly(verkey)
 
 
     @classmethod
