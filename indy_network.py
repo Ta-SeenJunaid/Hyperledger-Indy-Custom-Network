@@ -12,6 +12,9 @@ from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_led
 
 from stp_core.crypto.nacl_wrappers import Signer
 
+from plenum.common.constants import TRUSTEE, STEWARD
+from plenum.common.member.member import Member
+
 from plenum.common.config_helper import PConfigHelper, PNodeConfigHelper
 from plenum.common.util import is_hostname_valid
 from plenum.common.signer_did import DidSigner
@@ -336,6 +339,52 @@ class NetworkSetup:
         
         if not localNodes:
             localNodes = {}
+
+        try:
+            if isinstance(localNodes, int):
+                _localNodes = {localNodes}
+            else:
+                _localNodes = {int(_) for _ in localNodes}
+        except BaseException as exc:
+            raise RuntimeError('nodeNum must be an int or set of ints') from exc
+
+        config.NETWORK_NAME = network
+
+        config_helper = config_helper_class(config, chroot=chroot)
+        os.makedirs(config_helper.genesis_dir, exist_ok=True)
+        genesis_dir = config_helper.genesis_dir
+        keys_dir = config_helper.keys_dir
+
+        poolLedger = cls.init_pool_ledger(appendToLedgers, genesis_dir, config)
+        domainLedger = cls.init_domain_ledger(appendToLedgers, genesis_dir,
+                                              config, domainTxnFieldOrder)
+
+        genesis_protocol_version = None
+
+        seq_no = 1
+        
+        for td in trustee_def:
+            trustee_txn = Member.nym_txn(td.nym, verkey=td.verkey,
+                                        role=TRUSTEE, seq_no=seq_no,
+                                        protocol_version=genesis_protocol_version)
+            
+            seq_no += 1
+            domainLedger.add(trustee_txn)
+
+        for sd in steward_defs:
+            nym_txn = Member.nym_txn(sd.nym, verkey=sd.verkey, role=STEWARD, 
+                                    creator= trustee_def[0].nym, seq_no=seq_no,
+                                    protocol_version=genesis_protocol_version)
+            seq_no += 1
+            domainLedger.add(nym_txn)
+
+
+        for cd in client_defs:
+            txn = Member.nym_txn(cd.nym, verkey=cd.verkey, creator=trustee_def[0].nym,
+                                 seq_no=seq_no,
+                                 protocol_version=genesis_protocol_version)
+            seq_no += 1
+            domainLedger.add(txn)
 
 
 
